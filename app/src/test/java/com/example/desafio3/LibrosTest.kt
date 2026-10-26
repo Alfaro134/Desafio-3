@@ -91,6 +91,13 @@ class LibrosTest {
     }
 
     @Test
+    fun porcentajeConMuchasPaginas() {
+        val libro = Libro(totalPaginas = 30_000_000, paginasLeidas = 15_000_000)
+        assertEquals(50, libro.porcentajeAvance())
+        assertEquals(0, Libro(totalPaginas = 0, paginasLeidas = 0).porcentajeAvance())
+    }
+
+    @Test
     fun resumenVacio() {
         val resumen = calcularResumen(emptyList(), 2026)
         assertEquals(0, resumen.totalTerminados)

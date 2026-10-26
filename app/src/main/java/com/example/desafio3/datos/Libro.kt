@@ -21,7 +21,7 @@ data class Libro(
 ) {
     fun porcentajeAvance(): Int {
         if (totalPaginas <= 0) return 0
-        return (paginasLeidas * 100 / totalPaginas).coerceIn(0, 100)
+        return (paginasLeidas.toLong() * 100 / totalPaginas).toInt().coerceIn(0, 100)
     }
 
     fun terminado(): Boolean = estado == TERMINADO

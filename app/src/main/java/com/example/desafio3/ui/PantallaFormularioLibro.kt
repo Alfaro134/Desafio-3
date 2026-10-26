@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
@@ -26,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -49,6 +51,7 @@ fun PantallaFormularioLibro(
     onCancelar: () -> Unit
 ) {
     val contexto = LocalContext.current
+    val focusManager = LocalFocusManager.current
 
     var titulo by rememberSaveable { mutableStateOf(libroOriginal?.titulo ?: "") }
     var autor by rememberSaveable { mutableStateOf(libroOriginal?.autor ?: "") }
@@ -71,6 +74,7 @@ fun PantallaFormularioLibro(
     }
 
     fun guardar() {
+        focusManager.clearFocus()
         errores = validarLibro(titulo, autor, totalTexto, leidasTexto, estado, calificacion)
         if (errores.isNotEmpty()) {
             Toast.makeText(contexto, "Revisa los campos marcados en rojo", Toast.LENGTH_SHORT).show()
@@ -101,6 +105,7 @@ fun PantallaFormularioLibro(
     Column(
         modifier = modifier
             .fillMaxSize()
+            .imePadding()
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)

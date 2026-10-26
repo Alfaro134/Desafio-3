@@ -183,11 +183,17 @@ fun AppLector(usuario: FirebaseUser, onCerrarSesion: () -> Unit) {
 
     fun eliminarLibro(libro: Libro) {
         BaseDatos.refLibros(uid).child(libro.id).removeValue()
+            .addOnFailureListener {
+                Toast.makeText(contexto, "Error al eliminar: ${it.localizedMessage}", Toast.LENGTH_LONG).show()
+            }
         Toast.makeText(contexto, "Libro eliminado", Toast.LENGTH_SHORT).show()
     }
 
     fun guardarMeta(nuevaMeta: Int) {
         BaseDatos.refMeta(uid, anio).setValue(nuevaMeta)
+            .addOnFailureListener {
+                Toast.makeText(contexto, "Error al guardar la meta: ${it.localizedMessage}", Toast.LENGTH_LONG).show()
+            }
         Toast.makeText(contexto, "Meta actualizada", Toast.LENGTH_SHORT).show()
     }
 

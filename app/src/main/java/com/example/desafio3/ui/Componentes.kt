@@ -33,8 +33,9 @@ fun formatearFecha(fecha: Long): String =
 
 @Composable
 fun Estrellas(calificacion: Int, modifier: Modifier = Modifier) {
+    val estrellas = calificacion.coerceIn(0, 5)
     Text(
-        text = "★".repeat(calificacion) + "☆".repeat(5 - calificacion),
+        text = "★".repeat(estrellas) + "☆".repeat(5 - estrellas),
         color = colorEstrella,
         style = MaterialTheme.typography.titleMedium,
         modifier = modifier

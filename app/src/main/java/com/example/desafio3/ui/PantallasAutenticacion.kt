@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -22,15 +23,23 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.google.firebase.FirebaseNetworkException
+import com.google.firebase.FirebaseTooManyRequestsException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 
 private fun validarCorreo(correo: String): String? = when {
     correo.isBlank() -> "El correo es obligatorio"
@@ -42,6 +51,18 @@ private fun validarContrasena(contrasena: String): String? = when {
     contrasena.isEmpty() -> "La contraseña es obligatoria"
     contrasena.length < 6 -> "La contraseña debe tener al menos 6 caracteres"
     else -> null
+}
+
+// Firebase devuelve los errores en inglés, aquí se traducen los más comunes
+private fun mensajeError(excepcion: Exception, esRegistro: Boolean): String = when (excepcion) {
+    is FirebaseAuthWeakPasswordException -> "La contraseña es muy débil, usa al menos 6 caracteres"
+    is FirebaseAuthUserCollisionException -> "Ya existe una cuenta con ese correo"
+    is FirebaseAuthInvalidUserException -> "No existe una cuenta con ese correo o fue deshabilitada"
+    is FirebaseAuthInvalidCredentialsException ->
+        if (esRegistro) "El correo no es válido" else "Correo o contraseña incorrectos"
+    is FirebaseNetworkException -> "No hay conexión a internet, intenta de nuevo"
+    is FirebaseTooManyRequestsException -> "Demasiados intentos, espera un momento"
+    else -> "No se pudo completar: ${excepcion.localizedMessage}"
 }
 
 @Composable
@@ -62,18 +83,20 @@ fun PantallaLogin(auth: FirebaseAuth, onIrARegistro: () -> Unit) {
     var contrasena by rememberSaveable { mutableStateOf("") }
     var errorCorreo by rememberSaveable { mutableStateOf<String?>(null) }
     var errorContrasena by rememberSaveable { mutableStateOf<String?>(null) }
-    var cargando by rememberSaveable { mutableStateOf(false) }
+    var cargando by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
 
     fun iniciarSesion() {
         errorCorreo = validarCorreo(correo)
         errorContrasena = validarContrasena(contrasena)
         if (errorCorreo != null || errorContrasena != null) return
 
+        focusManager.clearFocus()
         cargando = true
         auth.signInWithEmailAndPassword(correo.trim(), contrasena)
             .addOnCompleteListener { cargando = false }
             .addOnFailureListener { excepcion ->
-                Toast.makeText(contexto, excepcion.localizedMessage, Toast.LENGTH_LONG).show()
+                Toast.makeText(contexto, mensajeError(excepcion, esRegistro = false), Toast.LENGTH_LONG).show()
             }
     }
 
@@ -96,7 +119,8 @@ fun PantallaRegistro(auth: FirebaseAuth, onIrALogin: () -> Unit) {
     var errorCorreo by rememberSaveable { mutableStateOf<String?>(null) }
     var errorContrasena by rememberSaveable { mutableStateOf<String?>(null) }
     var errorConfirmacion by rememberSaveable { mutableStateOf<String?>(null) }
-    var cargando by rememberSaveable { mutableStateOf(false) }
+    var cargando by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
 
     fun registrar() {
         errorCorreo = validarCorreo(correo)
@@ -108,6 +132,7 @@ fun PantallaRegistro(auth: FirebaseAuth, onIrALogin: () -> Unit) {
         }
         if (errorCorreo != null || errorContrasena != null || errorConfirmacion != null) return
 
+        focusManager.clearFocus()
         cargando = true
         auth.createUserWithEmailAndPassword(correo.trim(), contrasena)
             .addOnCompleteListener { tarea ->
@@ -117,7 +142,7 @@ fun PantallaRegistro(auth: FirebaseAuth, onIrALogin: () -> Unit) {
                 }
             }
             .addOnFailureListener { excepcion ->
-                Toast.makeText(contexto, excepcion.localizedMessage, Toast.LENGTH_LONG).show()
+                Toast.makeText(contexto, mensajeError(excepcion, esRegistro = true), Toast.LENGTH_LONG).show()
             }
     }
 
@@ -144,6 +169,7 @@ private fun FormularioAutenticacion(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .imePadding()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp, vertical = 48.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
