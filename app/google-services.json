@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "310621850752",
+    "project_id": "desafio3-6698f",
+    "storage_bucket": "desafio3-6698f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:310621850752:android:8cfa268b06a45ee7adea65",
+        "android_client_info": {
+          "package_name": "com.example.desafio3"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAu5UK8awHxrGwX2yrPnsRsBdfQMda3cNQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
